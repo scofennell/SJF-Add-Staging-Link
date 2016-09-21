@@ -1,12 +1,15 @@
 <?php
 
-new sjf_add_staging_link_admin_menu;
+add_action( 'init', 'sjf_add_staging_link_admin_menu_init' );
+function sjf_add_staging_link_admin_menu_init() {
+	new sjf_add_staging_link_admin_menu;
+}
 
 class sjf_add_staging_link_admin_menu {
 
-	public function construct() {
+	public function __construct() {
 
-		add_action( 'admin_bar_menu', array( $this, 'admin_bar_menu', 1000 ) );
+		add_action( 'admin_bar_menu', array( $this, 'admin_bar_menu' ), 1000 );
 
 	}
 
@@ -27,7 +30,7 @@ class sjf_add_staging_link_admin_menu {
 		$db_prefix = $wpdb -> base_prefix;
 
 		// WP-Engine uses hyperDB, so we haev to reach into that to get the data we need.
-		$db_slug = get_db_slug();
+		$db_slug = $this -> get_db_slug();
 		
 		#echo 497;
 
@@ -151,32 +154,32 @@ class sjf_add_staging_link_admin_menu {
 		if( ! is_multisite() )  { return $wp_admin_bar; }
 
 		// Super admins only.
-		$is_user_priveleged = is_user_priveleged();
+		$is_user_priveleged = $this -> is_user_priveleged();
 		if( ! $is_user_priveleged ) { return FALSE; }
 
 		// Grab the unmapped url to the current blog.  Surprisingly tricky once domain mapping is on!
-		$url = get_unmapped_blog_url();
+		$url = $this -> get_unmapped_blog_url();
 		$url = untrailingslashit( $url );
 
 		// Grab the tld.  We'll need to remove it to do some string manip, then re-add it.
-		$tld = get_tld_from_domain_url( $url );
+		$tld = $this -> get_tld_from_domain_url( $url );
 
 		// Take the url and replace periods with hyphens per WP Engine's current conventions.
-		$url = strip_tld( $url );
+		$url = $this -> strip_tld( $url );
 		$url = str_replace( '.', '-', $url );
 
 		// It's jsut easier if we do http.
 		$url = str_replace( 'https:', 'http:', $url );
 
 		// Check to make sure we got something back for the staging subdomain.
-		if ( is_staging() ) {
+		if ( $this -> is_staging() ) {
 			
-			$db_slug = get_db_slug();
+			$db_slug = $this -> get_db_slug();
 
 			$live_url = str_replace( '-staging-wpengine-', '', $url );
 			$live_url = str_replace( 'http://www.', 'http://', $live_url );
 			$live_url = str_replace( "-$db_slug" . 'blogs', '', $live_url );
-			$live_url = str_replace( "-$db_slug", '', $live_url );
+			$live_url = preg_replace( "/-$db_slug$/", '', $live_url);
 
 			$live_url = str_replace( '-', '.', $live_url );
 			$live_url = rtrim( $live_url, '.' );
@@ -193,7 +196,7 @@ class sjf_add_staging_link_admin_menu {
 		} else {
 
 			// Use the unmapped domain to figure out which staging subbdomain to use.
-			$staging_subdomain = get_staging_subdomain();
+			$staging_subdomain = $this -> get_staging_subdomain();
 
 			// We don't want to start with www, either.
 			$url = str_replace( '//www-', '', $url );
@@ -225,14 +228,7 @@ class sjf_add_staging_link_admin_menu {
 	 */
 	function is_staging() {
 		
-		global $wpdb;
-
-		// WP-Engine uses hyperDB, so we haev to reach into that to get the data we need.
-		if( ! isset( $wpdb -> last_used_server ) ) { return FALSE; }
-		if( ! isset( $wpdb -> last_used_server['name'] ) ) { return FALSE; }
-		$db_name = $wpdb -> last_used_server['name'];
-
-		if( stristr( $db_name, 'snapshot' ) ) { return TRUE; }
+		if( stristr( DB_NAME, 'snapshot' ) ) { return TRUE; }
 
 		return FALSE;
 
@@ -265,7 +261,7 @@ class sjf_add_staging_link_admin_menu {
 	function strip_tld( $url ) {
 
 		// Grab the tld.
-		$tld = get_tld_from_domain_url( $url );
+		$tld = $this -> get_tld_from_domain_url( $url );
 
 		// How long is the tld?
 		$tld_len = absint( strlen( $tld ) );

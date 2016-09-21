@@ -59,8 +59,10 @@ class SJF_Add_Staging_Link_Bootstrap {
 	 */
 	function load() {
 
+
+
 		// For each php file in the inc/ folder, require it.
-		foreach( glob( SJF_Add_Staging_Link_PATH . 'inc/*.php' ) as $filename ) {
+		foreach( glob( SJF_ADD_STAGING_LINK_PATH . 'inc/*.php' ) as $filename ) {
 
 			require_once( $filename );
 
