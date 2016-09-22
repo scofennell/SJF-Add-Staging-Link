@@ -8,7 +8,6 @@
  * @since SJF_Add_Staging_Link 0.1
  */
 
-
 // This has to occur in the global scope.
 new SJF_Add_Staging_Link_Bootstrap;
 
@@ -16,50 +15,16 @@ class SJF_Add_Staging_Link_Bootstrap {
 
 	function __construct() {
 
-		add_action( 'after_setup_theme', array( $this, 'load' ) );
-
-		add_action( 'network_admin_notices', array( $this, 'warn' ) );
-
-	}
-
-	/**
-	 * Without all of its dependencies, this plugin throws some admin notices.
-	 */
-	function warn( $echo = TRUE ) {
-
-		$out = '';
-
-		$messages = array();
-
-		$message_count = count( $messages );
-		if( ! empty( $message_count ) ) {
-			foreach( $messages as $message ) {
-				$out .= "
-					<div class='error notice is-dismissible'><p>$message</p></div>
-				";
-			}
-		}
-
-		if( empty( $out ) ) { return FALSE; }
-
-		if( $echo ) {
-
-			echo $out;
-
-		}
-
-		return TRUE;
+		add_action( 'plugins_loaded', array( $this, 'load' ), 1 );
 
 	}
 	
 	/**
-	 * If this plugin does not have all of its dependencies, it refuses to load its files.
+	 * Load our plugin files.
 	 * 
-	 * @return boolean Returns FALSE if it's missing dependencies, else TRUE.
+	 * @return boolean Returns TRUE upon require_once()'ing.
 	 */
 	function load() {
-
-
 
 		// For each php file in the inc/ folder, require it.
 		foreach( glob( SJF_ADD_STAGING_LINK_PATH . 'inc/*.php' ) as $filename ) {

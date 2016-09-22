@@ -32,13 +32,10 @@
 if( ! defined( 'ABSPATH' ) ) { exit; }
 
 // Watch out for plugin naming collisions.
-if( defined( 'SJF_ADD_STAGING_LINK_PATH' ) ) { exit; }
+if( defined( 'SJF_ADD_STAGING_LINK' ) ) { exit; }
 
 // A slug for our plugin.
 define( 'SJF_ADD_STAGING_LINK', 'sjf_add_staging_link' );
-
-// Establish a value for plugin version to bust file caches.
-define( 'SJF_ADD_STAGING_LINK_VERSION', '0.1' );
 
 // A constant to define the paths to our plugin folders.
 define( 'SJF_ADD_STAGING_LINK_FILE', __FILE__ );
@@ -46,5 +43,8 @@ define( 'SJF_ADD_STAGING_LINK_PATH', trailingslashit( plugin_dir_path( SJF_ADD_S
 
 // A constant to define the urls to our plugin folders.
 define( 'SJF_ADD_STAGING_LINK_URL', trailingslashit( plugin_dir_url( SJF_ADD_STAGING_LINK_FILE ) ) );
+
+// Establish a value for plugin version to bust file caches.
+define( 'SJF_ADD_STAGING_LINK_VERSION', filemtime( SJF_ADD_STAGING_LINK_PATH ) );
 
 require_once( SJF_ADD_STAGING_LINK_PATH . 'inc/class.sjf_add_staging_link_bootstrap.php' );

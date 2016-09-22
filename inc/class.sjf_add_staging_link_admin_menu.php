@@ -1,9 +1,14 @@
 <?php
 
-add_action( 'init', 'sjf_add_staging_link_admin_menu_init' );
-function sjf_add_staging_link_admin_menu_init() {
-	new sjf_add_staging_link_admin_menu;
-}
+/**
+ * Our class for adding stuff to the admin menu.
+ * 
+ * @package WordPress
+ * @subpackage SJF_Add_Staging_Link
+ * @since SJF_Add_Staging_Link 0.1
+ */
+
+new sjf_add_staging_link_admin_menu;
 
 class sjf_add_staging_link_admin_menu {
 
@@ -32,8 +37,6 @@ class sjf_add_staging_link_admin_menu {
 		// WP-Engine uses hyperDB, so we haev to reach into that to get the data we need.
 		$db_slug = $this -> get_db_slug();
 		
-		#echo 497;
-
 		// Don't bother returning anything if the db username is empty.
 		if( empty ( $db_slug ) ) { return FALSE; }
 
@@ -151,15 +154,16 @@ class sjf_add_staging_link_admin_menu {
 	 */
 	function admin_bar_menu( $wp_admin_bar ) {
 
-		if( ! is_network_admin() ) { return $wp_admin_bar; }
-
+		// Don't bother trying to add a link if it's not multisite.
 		if( ! is_multisite() )  { return $wp_admin_bar; }
 
-		// Super admins only.
-		$is_user_priveleged = $this -> is_user_priveleged();
-		if( ! $is_user_priveleged ) { return FALSE; }
+		// Don't bother trying to add a link to network admin.
+		if( is_network_admin() ) { return $wp_admin_bar; }
 
-		// Grab the unmapped url to the current blog.  Surprisingly tricky once domain mapping is on!
+		// Super admins only.
+		if( ! is_super_admin() ) { return $wp_admin_bar; }
+
+		// Grab the unmapped url to the current blog. Surprisingly tricky once domain mapping is on!
 		$url = $this -> get_unmapped_blog_url();
 		$url = untrailingslashit( $url );
 
@@ -170,7 +174,7 @@ class sjf_add_staging_link_admin_menu {
 		$url = $this -> strip_tld( $url );
 		$url = str_replace( '.', '-', $url );
 
-		// It's jsut easier if we do http.
+		// It's just easier if we do http.
 		$url = str_replace( 'https:', 'http:', $url );
 
 		// Check to make sure we got something back for the staging subdomain.
@@ -186,9 +190,12 @@ class sjf_add_staging_link_admin_menu {
 			$live_url = str_replace( '-', '.', $live_url );
 			$live_url = rtrim( $live_url, '.' );
 
+			// Append the query string to the URL.
+			$live_url .= $this -> get_query_string();
+
 			$args = array(
 				'id'     => 'staging-site',
-				'title'  => esc_attr__( 'Live Site' ),
+				'title'  => $live_url,//esc_attr__( 'Live Site' ),
 				'parent' =>	'site-name',
 				'href'   => $live_url
 			);
@@ -209,6 +216,9 @@ class sjf_add_staging_link_admin_menu {
 			// Append the staging subdomain to the URL.
 			$url .= $staging_subdomain;
 
+			// Append the query string to the URL.
+			$url .= $this -> get_query_string();
+
 			// Add a link to the staging site.
 			$args = array(
 				'id'     => 'staging-site',
@@ -221,6 +231,19 @@ class sjf_add_staging_link_admin_menu {
 
 		$wp_admin_bar -> add_node( $args );
 
+	}
+
+	/**
+	 * Grab the portion of a url after the TLD.
+	 * 
+	 * @return string The portion of a url after the TLD.
+	 */
+	function get_query_string() {
+
+		$sub_dir = esc_attr( $_SERVER['REQUEST_URI'] );
+
+		return $sub_dir;
+		
 	}
 
 	/**
@@ -278,31 +301,6 @@ class sjf_add_staging_link_admin_menu {
 		$out = substr( $url, 0, $substr_len );
 
 		return $out;
-
-	}
-
-	/**
-	 * Determine if the current user is priveleged, which has a different meaning on single VS multisite.
-	 * 
-	 * @return boolean TRUE if the user is priveleged, else FALSE.
-	 */
-	function is_user_priveleged() {
-
-		// If we are multisite...
-		if( is_multisite() ) {
-
-			// All we need to ask is if the user is a super admin.
-			if( is_super_admin() ) { return TRUE; }
-
-		// If we are not multisite...
-		} else {
-
-			// We ask if the user can update core.
-			if( current_user_can( 'update_core' ) ) { return TRUE; }
-		}
-
-		// Whelp, we made it to the end.  I guess the user is not priveleged.
-		return FALSE;
 
 	}
 
