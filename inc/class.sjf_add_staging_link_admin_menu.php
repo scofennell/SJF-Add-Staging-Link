@@ -151,6 +151,8 @@ class sjf_add_staging_link_admin_menu {
 	 */
 	function admin_bar_menu( $wp_admin_bar ) {
 
+		if( ! is_network_admin() ) { return $wp_admin_bar; }
+
 		if( ! is_multisite() )  { return $wp_admin_bar; }
 
 		// Super admins only.
