@@ -40,12 +40,8 @@ class sjf_add_staging_link_admin_menu {
 		// Don't bother returning anything if the db username is empty.
 		if( empty ( $db_slug ) ) { return FALSE; }
 
-		#echo 502;
-
 		// In staging, databasename includes "snapshot" in it and we don't want to return anything if we're in staging.
 		if ( stristr( $db_slug, 'snapshot' ) ) { return FALSE; }
-
-		#echo 507;
 
 		// Remove the table prefix from the staging name, since that's not going to be in prod.
 		if( ! empty( $db_slug ) && ! empty( $db_prefix ) ) {
@@ -195,7 +191,7 @@ class sjf_add_staging_link_admin_menu {
 
 			$args = array(
 				'id'     => 'staging-site',
-				'title'  => $live_url,//esc_attr__( 'Live Site' ),
+				'title'  => esc_attr__( 'Live Site' ),
 				'parent' =>	'site-name',
 				'href'   => $live_url
 			);
@@ -208,13 +204,17 @@ class sjf_add_staging_link_admin_menu {
 			$staging_subdomain = $this -> get_staging_subdomain();
 
 			// We don't want to start with www, either.
-			$url = str_replace( '//www-', '', $url );
+			//$url = str_replace( '//www-', '//', $url );
 
 			// Append the tld to the URL.
 			$url .= $tld;
 
+			$url3 = $url;
+
 			// Append the staging subdomain to the URL.
 			$url .= $staging_subdomain;
+
+			$url4 = $url;
 
 			// Append the query string to the URL.
 			$url .= $this -> get_query_string();
